@@ -1,0 +1,12 @@
+h2 {
+  font-size: 50px;
+  margin-left: 95px;
+}
+
+button {
+  background-color: rgb(20, 128, 128);
+  padding: 10px;
+  color: white;
+  border: 1px solid rgb(20, 128, 128);
+  border-radius: 20px;
+}
