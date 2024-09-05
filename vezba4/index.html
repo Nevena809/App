@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <h2>Temperature convert</h2>
+    <input type="number" id="inputNumber" value="0" /><br /><br />
+    <input type="radio" id="radioFarenhite" name="temp" />
+    <label for="radioFarenhite">Farenhite</label><br />
+    <input type="radio" id="radioCelsius" name="temp" />
+    <label for="radioCelsius">Celisiuos</label> <br /><br />
+    <button id="submitBtn" onclick="convert()">Submit</button>
+    <p id="result"></p>
+    <script src="index.js"></script>
+  </body>
+</html>
