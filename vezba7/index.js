@@ -1,10 +1,20 @@
-function sum(callback, x, y) {
-  const result = x + y;
-  callback(result);
+class Person {
+  constructor(name, age, ...address) {
+    this.name = name;
+    this.age = age;
+    this.address = new Address(...address);
+  }
 }
 
-function display(result) {
-  console.log(result);
+class Address {
+  constructor(street, city, country) {
+    this.street = street;
+    this.city = city;
+    this.country = country;
+  }
 }
 
-sum(display, 2, 3);
+const person1 = new Person("Nens", 23, "07", "Kraljevo", "Srbija");
+console.log(person1.name);
+console.log(person1.age);
+console.log(person1.address.city);
