@@ -1,20 +1,27 @@
-class Person {
-  constructor(name, age, ...address) {
-    this.name = name;
-    this.age = age;
-    this.address = new Address(...address);
+function createGame() {
+  let score = 0;
+
+  function increaseScore(points) {
+    score += points;
+    console.log(`+${points}`);
   }
+
+  function decreaseScore(points) {
+    score -= points;
+    console.log(`-${points}`);
+  }
+
+  function getScore() {
+    return score;
+  }
+
+  return { increaseScore, decreaseScore, getScore };
 }
 
-class Address {
-  constructor(street, city, country) {
-    this.street = street;
-    this.city = city;
-    this.country = country;
-  }
-}
+let final = createGame();
 
-const person1 = new Person("Nens", 23, "07", "Kraljevo", "Srbija");
-console.log(person1.name);
-console.log(person1.age);
-console.log(person1.address.city);
+final.increaseScore(5);
+final.increaseScore(9);
+final.decreaseScore(3);
+
+console.log(`The score is ${final.getScore()}`);
