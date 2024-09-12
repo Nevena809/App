@@ -4,6 +4,7 @@ const currentBtn = document.getElementById("currentBtn");
 const daysBtn = document.getElementById("daysBtn");
 
 const card = document.querySelector(".card");
+const cards = document.querySelector(".cards");
 const apiKey = "146ebbd2e0e3372876138c9ed29fc9d5";
 
 currentBtn.addEventListener("click", async (event) => {
@@ -30,8 +31,8 @@ daysBtn.addEventListener("click", async (event) => {
   if (city) {
     try {
       const daysWeatherData = await get5DayWeatherData(city);
-      const index = 0;
-      display5DaysWeatherInfo(daysWeatherData, index);
+      element = 0;
+      display5DaysWeatherInfo(daysWeatherData);
     } catch (error) {
       console.error(error);
       displayError(error);
@@ -96,22 +97,80 @@ function displayCurrentWeatherInfo(data) {
 
   descDisplay.innerHTML = description;
   card.appendChild(descDisplay);
-  card.classList.add("descDisplay");
+  descDisplay.classList.add("descDisplay");
 
   weatherEmoji.innerHTML = getWeatherEmoji(id);
   card.appendChild(weatherEmoji);
   weatherEmoji.classList.add("weatherEmoji");
 }
 
-function display5DaysWeatherInfo(data, index) {
-  const nameCity = data.city.name;
-  const temp = data.list[index].main.temp;
-  const day = data.list[index].dt_txt;
-  const weather = data.list[index].weather[index].main;
-  const weatherId = data.list[index].weather[index].id;
-  const weatherDescription = data.list[index].weather[index].description;
+function display5DaysWeatherInfo(data) {
+  card.innerHTML = "";
+  cards.innerHTML = "";
+  card.style.display = "flex";
 
-  console.log(weatherDescription);
+  for (let i = 0; i <= data.list.length - 1; i = i + 8) {
+    const cardDays = document.createElement("div");
+    cardDays.classList.add("cardDays");
+    cards.classList.add("cards");
+
+    const daysOfWeek = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+
+    const humidity = data.list[i].main.humidity;
+    const temp = data.list[i].main.temp;
+    const id = data.list[i].weather[0].id;
+    const description = data.list[i].weather[0].description;
+    const day = new Date(data.list[i].dt_txt);
+    let currentDayOfWeek = daysOfWeek[day.getDay()];
+
+    const humidityDisplay = document.createElement("p");
+    const tempDisplay = document.createElement("p");
+    const descDisplay = document.createElement("p");
+    const weatherEmoji = document.createElement("p");
+    const dayDisplay = document.createElement("p");
+
+    humidityDisplay.innerHTML = `Humidity: ${humidity}%`;
+    cardDays.appendChild(humidityDisplay);
+    humidityDisplay.classList.add("humidityDisplay");
+
+    weatherEmoji.innerHTML = getWeatherEmoji(id);
+    cardDays.appendChild(weatherEmoji);
+    weatherEmoji.classList.add("weatherEmoji");
+
+    tempDisplay.innerHTML = `${(temp - 273.15).toFixed(1)}°C`;
+    cardDays.appendChild(tempDisplay);
+    tempDisplay.classList.add("tempDisplay");
+
+    descDisplay.innerHTML = description;
+    cardDays.appendChild(descDisplay);
+    descDisplay.classList.add("descDisplay");
+
+    dayDisplay.innerHTML = `
+    ${currentDayOfWeek}  ${String(day.getHours()).padEnd(2, "0")}:${String(
+      day.getMinutes()
+    ).padEnd(2, "0")}`;
+    cardDays.appendChild(dayDisplay);
+    dayDisplay.classList.add("descDisplay");
+
+    cards.appendChild(cardDays);
+    cards.classList.add("cards");
+  }
+  const name = data.city.name;
+  const cityDisplay = document.createElement("h1");
+
+  cityDisplay.innerHTML = name;
+  card.appendChild(cityDisplay);
+  cityDisplay.classList.add("cityDisplay");
+
+  card.appendChild(cards);
 }
 
 function getWeatherEmoji(weatherId) {
