@@ -109,7 +109,7 @@ function display5DaysWeatherInfo(data) {
   cards.innerHTML = "";
   card.style.display = "flex";
 
-  for (let i = 0; i <= data.list.length - 1; i = i + 8) {
+  for (let i = 6; i <= data.list.length; i = i + 8) {
     const cardDays = document.createElement("div");
     cardDays.classList.add("cardDays");
     cards.classList.add("cards");
@@ -137,28 +137,36 @@ function display5DaysWeatherInfo(data) {
     const weatherEmoji = document.createElement("p");
     const dayDisplay = document.createElement("p");
 
-    humidityDisplay.innerHTML = `Humidity: ${humidity}%`;
-    cardDays.appendChild(humidityDisplay);
-    humidityDisplay.classList.add("humidityDisplay");
+    dayDisplay.innerHTML = `
+    ${currentDayOfWeek}  `;
+    cardDays.appendChild(dayDisplay);
+    dayDisplay.classList.add("dayDisplay");
 
     weatherEmoji.innerHTML = getWeatherEmoji(id);
     cardDays.appendChild(weatherEmoji);
     weatherEmoji.classList.add("weatherEmoji");
 
-    tempDisplay.innerHTML = `${(temp - 273.15).toFixed(1)}°C`;
+    const n = data.list.length;
+    let sum = 0.0;
+    for (const tempretaures of data.list) {
+      sum += tempretaures.main.temp;
+      console.log(tempretaures);
+    }
+
+    const average = sum / n;
+
+    console.log(sum);
+
+    tempDisplay.innerHTML = `${(average - 273.15).toFixed(1)}°C`;
     cardDays.appendChild(tempDisplay);
     tempDisplay.classList.add("tempDisplay");
 
     descDisplay.innerHTML = description;
     cardDays.appendChild(descDisplay);
     descDisplay.classList.add("descDisplay");
-
-    dayDisplay.innerHTML = `
-    ${currentDayOfWeek}  ${String(day.getHours()).padEnd(2, "0")}:${String(
-      day.getMinutes()
-    ).padEnd(2, "0")}`;
-    cardDays.appendChild(dayDisplay);
-    dayDisplay.classList.add("descDisplay");
+    humidityDisplay.innerHTML = `Humidity: ${humidity}%`;
+    cardDays.appendChild(humidityDisplay);
+    humidityDisplay.classList.add("humidityDisplay");
 
     cards.appendChild(cardDays);
     cards.classList.add("cards");
