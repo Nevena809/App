@@ -13,34 +13,48 @@ async function get5DayWeatherData(city) {
     throw new Error("Could not fetch a weather data");
   } else {
     const p = await response.json();
-    console.log(p);
+    // console.log(p);
 
     return p;
   }
 }
 
 function display5DaysWeatherInfo(data) {
-  // const day = data.list[i].dt_txt;
+  let dateArray = [];
+  for (let i = 0; i < data.list.length; i++) {
+    const dates = new Date(data.list[i].dt_txt).toISOString().split("T")[0];
+    dateArray.push(dates);
+  }
 
-  const groupedData = data.list.reduce((acc, curr) => {
-    const date = new Date(curr.dt_txt).toISOString().split("T")[0];
-    if (!acc[date]) {
-      acc[date] = [];
+  dateArray = new Set(dateArray);
+  dateArray = Array.from(dateArray);
+
+  let array = [];
+
+  for (let j = 0; j < dateArray.length; j++) {
+    let array2 = [];
+    for (let i = 0; i < data.list.length; i++) {
+      const dates = data.list[i].dt_txt.split(" ")[0];
+      if (dates === dateArray[j]) {
+        array2.push(data.list[i]);
+      }
     }
-    acc[date].push({ ...curr, date }); // Spread operator to copy the entire object
-    return acc;
-  }, {});
-  console.log(groupedData);
+    array.push(array2);
+  }
 
-  const namesArray = Object.values(groupedData).flat();
+  let sum = [];
+  for (let i = 0; i < array.length; i++) {
+    for (let j = 0; j < array[i].length; j++) {
+      sum[i] = (sum[i] || 0) + array[i][j].main.temp;
+    }
+    const n = array[i].length;
+    const avg = sum[i] / n;
 
-  console.log(namesArray);
-  const groupedNames = Object.entries(groupedData).map(([date, names]) => ({
-    date,
-    names: names.sort(),
-  }));
+    const temperature = (avg - 273.15).toFixed(1);
+    sum[i] = temperature;
+  }
 
-  console.log(groupedNames);
+  console.log(sum);
 }
 
 dataDisplay();
