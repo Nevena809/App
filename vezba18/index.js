@@ -7,6 +7,16 @@ const card = document.querySelector(".card");
 const cards = document.querySelector(".cards");
 const apiKey = "146ebbd2e0e3372876138c9ed29fc9d5";
 
+const daysOfWeek = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 currentBtn.addEventListener("click", async (event) => {
   event.preventDefault();
 
@@ -31,7 +41,8 @@ daysBtn.addEventListener("click", async (event) => {
   if (city) {
     try {
       const daysWeatherData = await get5DayWeatherData(city);
-      element = 0;
+      // element = 0;
+
       display5DaysWeatherInfo(daysWeatherData);
     } catch (error) {
       console.error(error);
@@ -49,7 +60,10 @@ async function getCurrentWeatherData(city) {
   if (!response.ok) {
     throw new Error("Could not fetch a current weather data");
   } else {
-    return await response.json();
+    const p = await response.json();
+    console.log(p);
+
+    return p;
   }
 }
 
@@ -68,11 +82,13 @@ async function get5DayWeatherData(city) {
 }
 
 function displayCurrentWeatherInfo(data) {
-  const {
-    name: city,
-    main: { temp, humidity },
-    weather: [{ description, id }],
-  } = data;
+  const weatherList = {
+    name: data.name,
+    humidity: data.main.humidity,
+    temp: data.main.temp,
+    id: data.weather[0].id,
+    description: data.weather[0].description,
+  };
 
   card.innerHTML = "";
   card.style.display = "flex";
@@ -83,23 +99,23 @@ function displayCurrentWeatherInfo(data) {
   const descDisplay = document.createElement("p");
   const weatherEmoji = document.createElement("p");
 
-  cityDisplay.innerHTML = city;
+  cityDisplay.innerHTML = weatherList.name;
   card.appendChild(cityDisplay);
   cityDisplay.classList.add("cityDisplay");
 
-  tempDisplay.innerHTML = `${(temp - 273.15).toFixed(1)}°C`;
+  tempDisplay.innerHTML = `${(weatherList.temp - 273.15).toFixed(1)}°C`;
   card.appendChild(tempDisplay);
   tempDisplay.classList.add("tempDisplay");
 
-  humidityDisplay.innerHTML = `Humidity: ${humidity}%`;
+  humidityDisplay.innerHTML = `Humidity: ${weatherList.humidity}%`;
   card.appendChild(humidityDisplay);
   humidityDisplay.classList.add("humidityDisplay");
 
-  descDisplay.innerHTML = description;
+  descDisplay.innerHTML = weatherList.description;
   card.appendChild(descDisplay);
   descDisplay.classList.add("descDisplay");
 
-  weatherEmoji.innerHTML = getWeatherEmoji(id);
+  weatherEmoji.innerHTML = getWeatherEmoji(weatherList.id);
   card.appendChild(weatherEmoji);
   weatherEmoji.classList.add("weatherEmoji");
 }
@@ -109,16 +125,80 @@ function display5DaysWeatherInfo(data) {
   cards.innerHTML = "";
   card.style.display = "flex";
 
-  let dateArray = [];
+  const array = dateNewArray(data);
+  const weatherList = [];
+
+  for (let i = 0; i < array.length - 1; i++) {
+    weatherList.push({
+      humidity: sumHumidity(array[i]),
+      temp: sumTemp(array[i]),
+      id: array[i][0].weather[0].id,
+      description: array[i][0].weather[0].description,
+      date: new Date(array[i][0].dt_txt),
+    });
+
+    let currentDayOfWeek = daysOfWeek[weatherList[i].date.getDay()];
+
+    const cardDays = document.createElement("div");
+    cardDays.classList.add("cardDays");
+    cards.classList.add("cards");
+
+    const humidityDisplay = document.createElement("p");
+    const tempDisplay = document.createElement("p");
+    const descDisplay = document.createElement("p");
+    const weatherEmoji = document.createElement("p");
+    const dayDisplay = document.createElement("p");
+
+    weatherEmoji.innerHTML = getWeatherEmoji(weatherList[i].id);
+    cardDays.appendChild(weatherEmoji);
+    weatherEmoji.classList.add("weatherEmoji");
+
+    tempDisplay.innerHTML = `${weatherList[i].temp}°C`;
+    cardDays.appendChild(tempDisplay);
+    tempDisplay.classList.add("tempDisplay");
+
+    humidityDisplay.innerHTML = `Humidity: ${weatherList[i].humidity}%`;
+    cardDays.appendChild(humidityDisplay);
+    humidityDisplay.classList.add("humidityDisplay");
+
+    descDisplay.innerHTML = `${weatherList[i].description}`;
+    cardDays.appendChild(descDisplay);
+    descDisplay.classList.add("descDisplay");
+
+    dayDisplay.innerHTML = `${currentDayOfWeek}`;
+    cardDays.appendChild(dayDisplay);
+    dayDisplay.classList.add("dayDisplay");
+
+    cards.appendChild(cardDays);
+    cards.classList.add("cards");
+
+    card.appendChild(cards);
+  }
+
+  const name = data.city.name;
+  const cityDisplay = document.createElement("h1");
+
+  cityDisplay.innerHTML = name;
+  card.appendChild(cityDisplay);
+  cityDisplay.classList.add("cityDisplay");
+
+  card.appendChild(cards);
+}
+
+function dateArraySet(data, dateArray = []) {
   for (let i = 0; i < data.list.length; i++) {
-    const dates = new Date(data.list[i].dt_txt).toISOString().split("T")[0];
+    const dates = data.list[i].dt_txt.split(" ")[0];
     dateArray.push(dates);
   }
 
   dateArray = new Set(dateArray);
   dateArray = Array.from(dateArray);
 
-  let array = [];
+  return dateArray;
+}
+
+function dateNewArray(data, array = []) {
+  let dateArray = dateArraySet(data);
 
   for (let j = 0; j < dateArray.length; j++) {
     let array2 = [];
@@ -131,86 +211,7 @@ function display5DaysWeatherInfo(data) {
     array.push(array2);
   }
 
-  console.log(array);
-
-  let sum = [];
-  for (let i = 0; i < array.length - 1; i++) {
-    for (let j = 0; j < array[i].length; j++) {
-      sum[i] = (sum[i] || 0) + array[i][j].main.temp;
-    }
-    const n = array[i].length;
-    const avg = sum[i] / n;
-
-    const temperature = (avg - 273.15).toFixed(1);
-    sum[i] = temperature;
-  }
-
-  console.log(sum);
-
-  for (let i = 0; i <= data.list.length; i = i + 8) {
-    const cardDays = document.createElement("div");
-    cardDays.classList.add("cardDays");
-    cards.classList.add("cards");
-
-    const daysOfWeek = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-
-    const humidity = data.list[i].main.humidity;
-    const temp = data.list[i].main.temp;
-    const id = data.list[i].weather[0].id;
-    const description = data.list[i].weather[0].description;
-    const day = new Date(data.list[i].dt_txt);
-    let currentDayOfWeek = daysOfWeek[day.getDay()];
-
-    const humidityDisplay = document.createElement("p");
-    const tempDisplay = document.createElement("p");
-    const descDisplay = document.createElement("p");
-    const weatherEmoji = document.createElement("p");
-    const dayDisplay = document.createElement("p");
-
-    dayDisplay.innerHTML = `
-    ${currentDayOfWeek}  `;
-    cardDays.appendChild(dayDisplay);
-    dayDisplay.classList.add("dayDisplay");
-
-    weatherEmoji.innerHTML = getWeatherEmoji(id);
-    cardDays.appendChild(weatherEmoji);
-    weatherEmoji.classList.add("weatherEmoji");
-
-    for (let i = 0; i < sum.length; i++) {
-      tempDisplay.innerHTML = `${sum[i / 8]}°C`;
-      cardDays.appendChild(tempDisplay);
-      tempDisplay.classList.add("tempDisplay");
-    }
-
-    // console.log(sum[0]);
-
-    descDisplay.innerHTML = description;
-    cardDays.appendChild(descDisplay);
-    descDisplay.classList.add("descDisplay");
-
-    humidityDisplay.innerHTML = `Humidity: ${humidity}%`;
-    cardDays.appendChild(humidityDisplay);
-    humidityDisplay.classList.add("humidityDisplay");
-
-    cards.appendChild(cardDays);
-    cards.classList.add("cards");
-  }
-  const name = data.city.name;
-  const cityDisplay = document.createElement("h1");
-
-  cityDisplay.innerHTML = name;
-  card.appendChild(cityDisplay);
-  cityDisplay.classList.add("cityDisplay");
-
-  card.appendChild(cards);
+  return array;
 }
 
 function getWeatherEmoji(weatherId) {
@@ -236,6 +237,24 @@ function getWeatherEmoji(weatherId) {
   }
 }
 
+function sumTemp(array) {
+  let sum = 0;
+  for (let i = 0; i < array.length - 1; i++) {
+    sum = sum + array[i].main.temp - 273.15;
+  }
+
+  return (sum / array.length).toFixed(1);
+}
+
+function sumHumidity(array) {
+  let sum = 0;
+  for (let i = 0; i < array.length - 1; i++) {
+    sum = sum + array[i].main.humidity;
+  }
+
+  return (sum / array.length).toFixed(1);
+}
+
 function displayError(message) {
   const errorDisplay = document.createElement("p");
   errorDisplay.innerHTML = message;
@@ -245,14 +264,3 @@ function displayError(message) {
   card.style.display = "flex";
   card.appendChild(errorDisplay);
 }
-
-// function temperatureDisplayIn5Days(data) {
-//   let dateArray = [];
-//   console.log(data.list);
-
-//   for (let i = 0; i < data.list.length; i++) {
-//     const dates = new Date(data.list[i].dt_txt.split(" ")[0]);
-//     dateArray.push(dates);
-//   }
-//   console.log(dateArray);
-// }
