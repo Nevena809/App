@@ -45,7 +45,6 @@ daysBtn.addEventListener("click", async (event) => {
   if (city) {
     try {
       const daysWeatherData = await get5DayWeatherData(city);
-      // element = 0;
 
       display5DaysWeatherInfo(daysWeatherData);
     } catch (error) {
@@ -92,24 +91,35 @@ function displayCurrentWeatherInfo(data) {
     temp: data.main.temp,
     id: data.weather[0].id,
     description: data.weather[0].description,
+    feels: data.main.feels_like,
+    min: data.main.temp_min,
+    max: data.main.temp_max,
   };
 
   card.innerHTML = "";
   card.style.display = "flex";
+  timeCard.style.display = "none";
 
   const cityDisplay = document.createElement("h1");
   const tempDisplay = document.createElement("p");
   const humidityDisplay = document.createElement("p");
   const descDisplay = document.createElement("p");
   const weatherEmoji = document.createElement("p");
+  const tempGroupDisplay = document.createElement("p");
 
   cityDisplay.innerHTML = weatherList.name;
   card.appendChild(cityDisplay);
   cityDisplay.classList.add("cityDisplay");
 
-  tempDisplay.innerHTML = `${(weatherList.temp - 273.15).toFixed(1)}°C`;
+  tempDisplay.innerHTML = `${(weatherList.temp - 273.15).toFixed()}°C`;
   card.appendChild(tempDisplay);
   tempDisplay.classList.add("tempDisplay");
+
+  tempGroupDisplay.innerHTML = `${(weatherList.max - 273.15).toFixed()}°C / ${(
+    weatherList.min - 273.15
+  ).toFixed()}°C Feels like: ${(weatherList.feels - 273.15).toFixed(1)}°C`;
+  card.appendChild(tempGroupDisplay);
+  tempGroupDisplay.classList.add("tempGroupDisplay");
 
   humidityDisplay.innerHTML = `Humidity: ${weatherList.humidity}%`;
   card.appendChild(humidityDisplay);
@@ -134,8 +144,9 @@ function display5DaysWeatherInfo(data) {
 
   for (let i = 0; i < array.length - 1; i++) {
     weatherList.push({
-      humidity: sumHumidity(array[i]),
-      temp: sumTemp(array[i]),
+      humidity: averageHumidity(array[i]),
+      maxTemp: maxTemp(array[i]),
+      minTemp: minTemp(array[i]),
       id: array[i][0].weather[0].id,
       description: array[i][0].weather[0].description,
       date: array[i][0].dt_txt,
@@ -153,13 +164,14 @@ function display5DaysWeatherInfo(data) {
     const tempDisplay = document.createElement("p");
     const descDisplay = document.createElement("p");
     const weatherEmoji = document.createElement("p");
+    const dayDisplay = document.createElement("p");
     const dayDisplayButoon = document.createElement("button");
 
     weatherEmoji.innerHTML = getWeatherEmoji(weatherList[i].id);
     cardDays.appendChild(weatherEmoji);
     weatherEmoji.classList.add("weatherEmoji");
 
-    tempDisplay.innerHTML = `${weatherList[i].temp}°C`;
+    tempDisplay.innerHTML = `${weatherList[i].maxTemp}°C / <spam class="minTempDisplay">${weatherList[i].minTemp}°C</spam>`;
     cardDays.appendChild(tempDisplay);
     tempDisplay.classList.add("tempDisplay");
 
@@ -171,7 +183,23 @@ function display5DaysWeatherInfo(data) {
     cardDays.appendChild(descDisplay);
     descDisplay.classList.add("descDisplay");
 
-    dayDisplayButoon.innerHTML = `${currentDayOfWeek2}`;
+    //Display button
+
+    dayDisplayButoon.style.visibility = "hidden";
+
+    cardDays.addEventListener("mouseover", () => {
+      dayDisplayButoon.style.visibility = "visible";
+    });
+
+    cardDays.addEventListener("mouseout", () => {
+      dayDisplayButoon.style.visibility = "hidden";
+    });
+
+    dayDisplay.innerHTML = `${currentDayOfWeek2}`;
+    cardDays.appendChild(dayDisplay);
+    dayDisplay.classList.add("dayDisplay");
+
+    dayDisplayButoon.innerHTML = `Per three hour`;
     cardDays.appendChild(dayDisplayButoon);
     dayDisplayButoon.classList.add("dayDisplayButton");
 
@@ -204,8 +232,6 @@ function perTimeDisplay(currentDayOfWeek, data) {
   const currentDate = currentDayOfWeek;
   const array = dateNewArray(data);
 
-  console.log(array.length);
-
   const weatherList = [];
 
   for (let i = 0; i < array[i].length; i++) {
@@ -227,7 +253,6 @@ function perTimeDisplay(currentDayOfWeek, data) {
         cardDays.classList.add("cardDays");
         timeCards.classList.add("timeCards");
 
-        // console.log(weatherList[i]);
         const humidityDisplay = document.createElement("p");
         const tempDisplay = document.createElement("p");
         const weatherEmoji = document.createElement("p");
@@ -238,9 +263,7 @@ function perTimeDisplay(currentDayOfWeek, data) {
         cardDays.appendChild(weatherEmoji);
         weatherEmoji.classList.add("weatherEmoji");
 
-        tempDisplay.innerHTML = `${(weatherList[i].temp - 273.15).toFixed(
-          1
-        )}°C`;
+        tempDisplay.innerHTML = `${(weatherList[i].temp - 273.15).toFixed()}°C`;
         cardDays.appendChild(tempDisplay);
         tempDisplay.classList.add("tempDisplay");
 
@@ -253,9 +276,9 @@ function perTimeDisplay(currentDayOfWeek, data) {
         descDisplay.classList.add("descDisplay");
 
         const time = weatherList[i].date.split(" ")[1];
-        console.log(time);
+        const time2 = time.split(":")[0];
 
-        timeDisplay.innerHTML = time;
+        timeDisplay.innerHTML = `${time2}h`;
         cardDays.appendChild(timeDisplay);
         timeDisplay.classList.add("dayDisplay");
 
@@ -319,24 +342,69 @@ function getWeatherEmoji(weatherId) {
   }
 }
 
-function sumTemp(array) {
-  let sum = 0;
-  for (let i = 0; i < array.length; i++) {
-    sum = sum + array[i].main.temp - 273.15;
-  }
-
-  return (sum / array.length).toFixed(1);
-}
-
-function sumHumidity(array) {
+function averageHumidity(array) {
   let sum = 0;
   for (let i = 0; i < array.length; i++) {
     sum = sum + array[i].main.humidity;
   }
 
-  console.log(sum);
+  return (sum / array.length).toFixed();
+}
 
-  return (sum / array.length).toFixed(1);
+// ...............First way.................
+
+// function maxTemp(array) {
+//   let max = array[0].main.temp_max;
+//   for (let i = 0; i < array.length; i++) {
+//     if (max < array[i].main.temp_max) {
+//       max = array[i].main.temp_max;
+//     }
+//   }
+
+//   return (max - 273.15).toFixed();
+// }
+
+// .............Second way..................
+
+// function maxTemp(array) {
+//   let max = 0;
+//   for (let i = 0; i < array.length; i++) {
+//     max = Math.max(max, array[i].main.temp_max);
+//   }
+
+//   return (max - 273.15).toFixed();
+// }
+
+// ................Third way................
+
+function maxTemp(array) {
+  const maxList = [];
+
+  console.log(array);
+
+  for (let i = 0; i < array.length; i++) {
+    maxList.push(array[i].main.temp_max);
+  }
+
+  let max = 0;
+  max = Math.max(...maxList);
+
+  return (max - 273.15).toFixed();
+}
+
+function minTemp(array) {
+  const minList = [];
+
+  console.log(array);
+
+  for (let i = 0; i < array.length; i++) {
+    minList.push(array[i].main.temp_min);
+  }
+
+  let min = 0;
+  min = Math.min(...minList);
+
+  return (min - 273.15).toFixed();
 }
 
 function displayError(message) {
