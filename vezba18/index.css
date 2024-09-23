@@ -132,7 +132,7 @@ p {
 
 .cardDays {
   border: 2px solid hsla(0, 0%, 30%, 0.3);
-  padding: 30px;
+  padding: 15px;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -200,5 +200,11 @@ p {
     max-width: 1920px;
     margin: 0 auto;
     padding: 0 20px;
+  }
+
+  .timeCards {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 }

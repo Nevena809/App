@@ -63,10 +63,10 @@ async function getCurrentWeatherData(city) {
   if (!response.ok) {
     throw new Error("Could not fetch a current weather data");
   } else {
-    const p = await response.json();
-    console.log(p);
+    const res = await response.json();
+    console.log(res);
 
-    return p;
+    return res;
   }
 }
 
@@ -77,10 +77,10 @@ async function get5DayWeatherData(city) {
   if (!response.ok) {
     throw new Error("Could not fetch a weather data");
   } else {
-    const p = await response.json();
-    console.log(p);
+    const res = await response.json();
+    console.log(res);
 
-    return p;
+    return res;
   }
 }
 
@@ -92,8 +92,6 @@ function displayCurrentWeatherInfo(data) {
     id: data.weather[0].id,
     description: data.weather[0].description,
     feels: data.main.feels_like,
-    min: data.main.temp_min,
-    max: data.main.temp_max,
   };
 
   card.innerHTML = "";
@@ -115,9 +113,9 @@ function displayCurrentWeatherInfo(data) {
   card.appendChild(tempDisplay);
   tempDisplay.classList.add("tempDisplay");
 
-  tempGroupDisplay.innerHTML = `${(weatherList.max - 273.15).toFixed()}°C / ${(
-    weatherList.min - 273.15
-  ).toFixed()}°C Feels like: ${(weatherList.feels - 273.15).toFixed(1)}°C`;
+  tempGroupDisplay.innerHTML = `Feels like: ${(
+    weatherList.feels - 273.15
+  ).toFixed()}°C`;
   card.appendChild(tempGroupDisplay);
   tempGroupDisplay.classList.add("tempGroupDisplay");
 
@@ -145,8 +143,8 @@ function display5DaysWeatherInfo(data) {
   for (let i = 0; i < array.length - 1; i++) {
     weatherList.push({
       humidity: averageHumidity(array[i]),
-      maxTemp: maxTemp(array[i]),
-      minTemp: minTemp(array[i]),
+      maxTemp: maxTemperature(array[i]),
+      minTemp: minTemperature(array[i]),
       id: array[i][0].weather[0].id,
       description: array[i][0].weather[0].description,
       date: array[i][0].dt_txt,
@@ -302,21 +300,21 @@ function dateArraySet(data, dateArray = []) {
   return dateArray;
 }
 
-function dateNewArray(data, array = []) {
+function dateNewArray(data, newArray = []) {
   let dateArray = dateArraySet(data);
 
   for (let j = 0; j < dateArray.length; j++) {
-    let array2 = [];
+    let array = [];
     for (let i = 0; i < data.list.length; i++) {
       const dates = data.list[i].dt_txt.split(" ")[0];
       if (dates === dateArray[j]) {
-        array2.push(data.list[i]);
+        array.push(data.list[i]);
       }
     }
-    array.push(array2);
+    newArray.push(array);
   }
 
-  return array;
+  return newArray;
 }
 
 function getWeatherEmoji(weatherId) {
@@ -353,7 +351,7 @@ function averageHumidity(array) {
 
 // ...............First way.................
 
-// function maxTemp(array) {
+// function maxTemperature(array) {
 //   let max = array[0].main.temp_max;
 //   for (let i = 0; i < array.length; i++) {
 //     if (max < array[i].main.temp_max) {
@@ -366,7 +364,7 @@ function averageHumidity(array) {
 
 // .............Second way..................
 
-// function maxTemp(array) {
+// function maxTemperature(array) {
 //   let max = 0;
 //   for (let i = 0; i < array.length; i++) {
 //     max = Math.max(max, array[i].main.temp_max);
@@ -377,10 +375,8 @@ function averageHumidity(array) {
 
 // ................Third way................
 
-function maxTemp(array) {
+function maxTemperature(array) {
   const maxList = [];
-
-  console.log(array);
 
   for (let i = 0; i < array.length; i++) {
     maxList.push(array[i].main.temp_max);
@@ -392,10 +388,8 @@ function maxTemp(array) {
   return (max - 273.15).toFixed();
 }
 
-function minTemp(array) {
+function minTemperature(array) {
   const minList = [];
-
-  console.log(array);
 
   for (let i = 0; i < array.length; i++) {
     minList.push(array[i].main.temp_min);
